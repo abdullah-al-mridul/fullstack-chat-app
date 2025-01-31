@@ -7,10 +7,17 @@ import ChatContainer from "../components/ChatContainer";
 const HomePage = () => {
   const { selectedUser } = useChatStore();
   return (
-    <div className=" h-screen bg-base-200">
-      <div className=" flex items-center justify-center sm:pt-20 h-full pt-[65px]">
-        <div className=" bg-base-100 sm:rounded-lg shadow-sm w-full max-w-6xl h-full sm:h-[calc(100vh-8rem)]">
-          <div className=" flex h-full rounded-lg overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-base-300/50 to-base-100">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-white/10 bg-[size:40px_40px] [mask-image:radial-gradient(white,transparent_90%)]" />
+        <div className="absolute -top-40 -right-40 size-80 rounded-full bg-primary/20 blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 size-80 rounded-full bg-secondary/20 blur-3xl" />
+      </div>
+
+      <div className="flex items-center justify-center sm:pt-20 h-full pt-[65px]">
+        <div className="backdrop-blur-xl bg-base-100/50 sm:rounded-2xl border border-base-content/5 shadow-xl w-full max-w-6xl h-[calc(100vh-65px)] sm:h-[calc(100vh-8rem)]">
+          <div className="flex h-full rounded-2xl overflow-hidden">
             <Sidebar />
             {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
           </div>

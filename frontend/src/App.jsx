@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from "./components/Navbar";
+import MobileSidebar from "./components/MobileSidebar";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/HomePage";
 import Signup from "./pages/SignUpPage";
@@ -12,6 +13,7 @@ import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useThemeStore } from "./store/useThemeStore";
 import EmailVerfication from "./pages/EmailVerfication";
+import ImageModal from "./components/ImageModal";
 
 const App = () => {
   const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
@@ -52,6 +54,7 @@ const App = () => {
   return (
     <div data-theme={theme}>
       <Navbar />
+      <MobileSidebar />
       <Routes>
         {/* Protected routes that require verification */}
         <Route
@@ -105,6 +108,7 @@ const App = () => {
           element={authUser ? <Settings /> : <Navigate to="/login" />}
         />
       </Routes>
+      <ImageModal />
       <Toaster position="bottom-center" />
     </div>
   );

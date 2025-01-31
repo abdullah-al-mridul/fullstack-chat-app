@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import ChatHeader from "./ChatHeader";
 import ChatInput from "./ChatInput";
@@ -6,8 +6,10 @@ import ChatSkeleton from "./skeleton/ChatSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatDate } from "../lib/utils";
 import { ImageOff } from "lucide-react";
+import { useImageModalStore } from "../store/useImageModalStore";
 
 const ChatContainer = () => {
+  const { setModalImage } = useImageModalStore();
   const {
     messages,
     getMessages,
@@ -66,7 +68,7 @@ const ChatContainer = () => {
         {messages.map((message, idx) => {
           const isLastMessage = idx === messages.length - 1;
           const isSentByMe = message.senderId === authUser._id;
-          const showAvatar = true; // You can add logic to show/hide avatar based on consecutive messages
+          const showAvatar = true;
 
           return (
             <div
@@ -106,7 +108,10 @@ const ChatContainer = () => {
               >
                 <div className="flex flex-col gap-2">
                   {message.image && (
-                    <div className="relative group/image">
+                    <div
+                      className="relative group/image cursor-zoom-in"
+                      onClick={() => setModalImage(message.image)}
+                    >
                       <img
                         src={message.image}
                         alt="Attachment"
