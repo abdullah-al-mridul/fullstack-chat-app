@@ -1,5 +1,8 @@
+import { getRecieverSocketId } from "../lib/socket.io.js";
 import Message from "../models/message.model.js";
-
+import User from "../models/user.model.js";
+import cloudinary from "cloudinary";
+import { io } from "../lib/socket.io.js";
 export const getUsers = async (req, res) => {
   try {
     const loggedInUser = req.user._id;
@@ -50,6 +53,10 @@ export const sendMessage = async (req, res) => {
       image: imageUrl,
     });
     await newMessage.save();
+    const receiverSocketId = getRecieverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
     res.status(201).json(newMessage);
   } catch (err) {
     console.log(err.message);

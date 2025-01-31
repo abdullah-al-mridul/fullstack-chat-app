@@ -2,3 +2,6 @@
   background-color: #242840;
   color: #605dff;
 }
+* {
+  user-select: none !important;
+}

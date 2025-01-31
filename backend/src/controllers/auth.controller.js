@@ -2,6 +2,8 @@ import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
+import crypto from "crypto";
+import { sendVerificationEmail } from "../lib/mailer.js";
 
 export const signup = async (req, res) => {
   const { email, fullName, password } = req.body;
@@ -109,5 +111,95 @@ export const checkUser = (req, res) => {
     res
       .status(500)
       .json({ message: "Internal server error", error: err.message });
+  }
+};
+
+export const sendVerification = async (req, res) => {
+  const userId = req.user._id;
+  if (!userId) return res.status(400).json({ message: "Invalid request" });
+
+  try {
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000
+    ).toString();
+
+    // Update user with new verification code
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        verificationCode,
+        codeExpiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes expiry
+      },
+      { new: true }
+    );
+
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    // Send verification email
+    await sendVerificationEmail(
+      req.user.email,
+      "Verify your email",
+      verificationCode
+    );
+
+    res.status(200).json({ message: "Verification code sent successfully" });
+  } catch (error) {
+    console.error("Error sending verification:", error);
+    res.status(500).json({
+      message: "Failed to send verification code",
+      error: error.message,
+    });
+  }
+};
+
+export const verifyCode = async (req, res) => {
+  try {
+    const { code } = req.body;
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+
+    if (!user.verificationCode) {
+      return res.status(400).json({
+        message: "No verification code found. Please request a new code.",
+      });
+    }
+
+    // Check if code has expired
+    if (Date.now() > user.codeExpiresAt) {
+      // Clear the expired code
+      await User.findByIdAndUpdate(userId, {
+        verificationCode: null,
+        codeExpiresAt: null,
+      });
+
+      return res.status(400).json({
+        message: "Verification code has expired. Please request a new code.",
+      });
+    }
+
+    // Verify the code
+    if (code !== user.verificationCode) {
+      return res.status(400).json({
+        message: "Invalid verification code",
+      });
+    }
+
+    // Update user verification status and clear the code
+    await User.findByIdAndUpdate(userId, {
+      isVerified: true,
+      verificationCode: null,
+      codeExpiresAt: null,
+    });
+
+    res.status(200).json({
+      message: "Email verified successfully",
+    });
+  } catch (error) {
+    console.error("Error verifying code:", error);
+    res.status(500).json({
+      message: "Failed to verify code",
+      error: error.message,
+    });
   }
 };

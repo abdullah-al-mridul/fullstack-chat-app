@@ -11,40 +11,99 @@ import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { useThemeStore } from "./store/useThemeStore";
+import EmailVerfication from "./pages/EmailVerfication";
+
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
   const { theme } = useThemeStore();
+  // console.log({ onlineUsers });
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
-  console.log({ authUser });
+
   if (isCheckingAuth && !authUser)
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader className="size-10 animate-spin" />
       </div>
     );
+
+  // Helper function to handle protected routes with verification check
+  const ProtectedRoute = ({ children }) => {
+    if (!authUser) return <Navigate to="/login" />;
+    if (!authUser.isVerified) return <Navigate to="/verification" />;
+    return children;
+  };
+
+  // Helper function to handle auth routes (login/signup)
+  const AuthRoute = ({ children }) => {
+    if (!authUser) return children;
+    if (!authUser.isVerified) return <Navigate to="/verification" />;
+    return <Navigate to="/" />;
+  };
+
+  // Helper function to handle verification route
+  const VerificationRoute = ({ children }) => {
+    if (!authUser) return <Navigate to="/login" />;
+    if (authUser.isVerified) return <Navigate to="/" />;
+    return children;
+  };
+
   return (
     <div data-theme={theme}>
       <Navbar />
       <Routes>
+        {/* Protected routes that require verification */}
         <Route
           path="/"
-          element={authUser ? <Home /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/signup"
-          element={!authUser ? <Signup /> : <Navigate to="/" />}
-        />
-        <Route
-          path="/login"
-          element={!authUser ? <Login /> : <Navigate to="/" />}
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/profile"
-          element={authUser ? <Profile /> : <Navigate to="/login" />}
+          element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          }
         />
-        <Route path="/settings" element={<Settings />} />
+
+        {/* Auth routes */}
+        <Route
+          path="/signup"
+          element={
+            <AuthRoute>
+              <Signup />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <AuthRoute>
+              <Login />
+            </AuthRoute>
+          }
+        />
+
+        {/* Verification route */}
+        <Route
+          path="/verification"
+          element={
+            <VerificationRoute>
+              <EmailVerfication />
+            </VerificationRoute>
+          }
+        />
+
+        {/* Settings can be accessed regardless of verification */}
+        <Route
+          path="/settings"
+          element={authUser ? <Settings /> : <Navigate to="/login" />}
+        />
       </Routes>
       <Toaster position="bottom-center" />
     </div>
