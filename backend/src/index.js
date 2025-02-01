@@ -8,7 +8,9 @@ import cors from "cors";
 import { app, server } from "./lib/socket.io.js";
 import path from "node:path";
 dotenv.config();
-const __dirname = path.resolve();
+const dirname = path.resolve();
+const frontendPath = path.join(dirname, "../frontend/dist/index.html");
+const frontendDistPath = path.join(dirname, "../frontend/dist/");
 const PORT = process.env.PORT || 3000;
 const IP = process.env.IP || "192.168.0.102";
 app.use(express.json({ limit: "10mb" }));
@@ -17,13 +19,12 @@ app.use(cookieParser());
 app.use("/api/auth", authRouter);
 app.use("/api/messages", messageRouter);
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+  app.use(express.static(frontendDistPath));
   app.get("*", (req, res) => {
-    res.sendFile(
-      path.join(path.join(__dirname, "../../frontend", "dist", "index.html"))
-    );
+    res.sendFile(frontendPath);
   });
 }
+
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   connectDB();
