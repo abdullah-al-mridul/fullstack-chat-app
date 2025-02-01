@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import { showCustomToast } from "../utils/customToast";
 import { io } from "socket.io-client";
+import { useOnlineUsersStore } from "./useOnlineUsersStore";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
@@ -9,7 +10,6 @@ export const useAuthStore = create((set, get) => ({
   isSigningUp: false,
   isUpdatingProfile: false,
   isLoggingIn: false,
-  onlineUsers: [],
   socket: null,
   checkAuth: async () => {
     try {
@@ -78,15 +78,18 @@ export const useAuthStore = create((set, get) => ({
   connectToSocket: () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
-    const socket = io("http://localhost:3000", {
+
+    const socket = io(import.meta.env.VITE_API_URL_SOCKET, {
       query: {
         userId: authUser._id,
       },
     });
+
     socket.connect();
     set({ socket });
+
     socket.on("getOnlineUsers", (users) => {
-      set({ onlineUsers: users });
+      useOnlineUsersStore.getState().setOnlineUsers(users);
     });
   },
   disconnectFromSocket: () => {

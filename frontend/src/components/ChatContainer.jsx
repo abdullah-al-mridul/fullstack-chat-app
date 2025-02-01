@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, memo } from "react";
 import { useChatStore } from "../store/useChatStore";
 import ChatHeader from "./ChatHeader";
 import ChatInput from "./ChatInput";
 import ChatSkeleton from "./skeleton/ChatSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 import { formatDate } from "../lib/utils";
-import { ImageOff } from "lucide-react";
+import { ImageOff, ArrowDown } from "lucide-react";
 import { useImageModalStore } from "../store/useImageModalStore";
 
-const ChatContainer = () => {
+const ChatContainer = memo(() => {
   const { setModalImage } = useImageModalStore();
   const {
     messages,
@@ -21,6 +21,19 @@ const ChatContainer = () => {
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const isScrolledUp = scrollHeight - scrollTop - clientHeight > 100;
+    setShowScrollButton(isScrolledUp);
+  };
+
+  const scrollToBottom = () => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     getMessages(selectedUser._id);
@@ -36,9 +49,7 @@ const ChatContainer = () => {
   ]);
 
   useEffect(() => {
-    if (messageEndRef.current && messages) {
-      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
+    scrollToBottom();
   }, [messages]);
 
   const handleImageError = (e) => {
@@ -63,7 +74,8 @@ const ChatContainer = () => {
       <ChatHeader />
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth"
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth relative"
       >
         {messages.map((message, idx) => {
           const isLastMessage = idx === messages.length - 1;
@@ -135,10 +147,20 @@ const ChatContainer = () => {
             </div>
           );
         })}
+
+        {showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            className="fixed bottom-24 right-[48%] btn btn-circle animate-bounce btn-primary btn-sm shadow-lg"
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDown className="size-4" />
+          </button>
+        )}
       </div>
       <ChatInput />
     </div>
   );
-};
+});
 
 export default ChatContainer;

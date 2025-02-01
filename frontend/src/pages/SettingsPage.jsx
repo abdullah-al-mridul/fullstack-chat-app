@@ -154,6 +154,7 @@ const SettingsPage = () => {
                     <div className="flex gap-2">
                       <input
                         type="text"
+                        name="search"
                         className="input input-bordered flex-1 bg-base-100/50 backdrop-blur text-sm h-11"
                         placeholder="Type a message..."
                         value="This is a preview"

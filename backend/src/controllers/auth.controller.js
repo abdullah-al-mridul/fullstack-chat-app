@@ -6,42 +6,77 @@ import crypto from "crypto";
 import { sendVerificationEmail } from "../lib/mailer.js";
 
 export const signup = async (req, res) => {
-  const { email, fullName, password } = req.body;
   try {
-    //hash password
-    if (!fullName || !email || !password) {
+    const { email, fullName, password } = req.body;
+
+    // Input validation
+    if (!fullName?.trim() || !email?.trim() || !password?.trim()) {
       return res.status(400).json({ message: "All fields are required" });
     }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res
+        .status(400)
+        .json({ message: "Please enter a valid email address" });
+    }
+
+    // Name validation
+    if (fullName.trim().length < 2) {
+      return res
+        .status(400)
+        .json({ message: "Full name must be at least 2 characters" });
+    }
+    if (fullName.trim().length > 15) {
+      return res
+        .status(400)
+        .json({ message: "Full name cannot be more than 15 characters" });
+    }
+
+    // Password validation
     if (password.length < 6) {
       return res
         .status(400)
         .json({ message: "Password must be at least 6 characters" });
     }
-    const user = await User.findOne({ email });
-    if (user) {
-      return res.status(400).json({ message: "User already exists" });
+    if (password.length > 50) {
+      return res.status(400).json({ message: "Password is too long" });
     }
+
+    // Check if user exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email is already registered" });
+    }
+
+    // Create new user
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const newUser = new User({ fullName, email, password: hashedPassword });
-    const newUserSaved = await newUser.save();
-    if (!newUserSaved) {
-      return res.status(400).json({ message: "User not created" });
-    } else {
-      //generate token
-      generateToken(newUserSaved._id, res);
-      await newUserSaved.save();
-      res.status(201).json({
-        _id: newUserSaved._id,
-        fullName: newUserSaved.fullName,
-        email: newUserSaved.email,
-        profilePic: newUserSaved.profilePic,
-      });
-    }
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: err.message });
+
+    const newUser = new User({
+      fullName: fullName.trim(),
+      email: email.toLowerCase(),
+      password: hashedPassword,
+    });
+
+    const savedUser = await newUser.save();
+
+    // Generate token and send response
+    generateToken(savedUser._id, res);
+
+    res.status(201).json({
+      _id: savedUser._id,
+      fullName: savedUser.fullName,
+      email: savedUser.email,
+      profilePic: savedUser.profilePic,
+    });
+  } catch (error) {
+    console.error("Signup error:", error);
+    res.status(500).json({
+      message: "Failed to create account",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+    });
   }
 };
 
@@ -62,6 +97,7 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      isVerified: user.isVerified,
     });
   } catch (err) {
     res

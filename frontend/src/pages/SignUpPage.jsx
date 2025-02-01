@@ -94,7 +94,7 @@ const SignUpPage = () => {
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="flex flex-col justify-center items-center p-6 sm:p-12 bg-base-100">
-        <div className="w-full max-w-md space-y-8">
+        <div className="w-full max-w-md space-y-8 pt-12 lg:p-0">
           {/* LOGO */}
           <div className="text-center mb-8">
             <div className="flex flex-col items-center gap-2 group cursor-pointer">
@@ -152,6 +152,7 @@ const SignUpPage = () => {
                   placeholder="john@example.com"
                   className="input input-bordered pl-10 w-full transition-all duration-300 hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/20"
                   value={formData.email}
+                  autoComplete="email"
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
@@ -192,7 +193,7 @@ const SignUpPage = () => {
                   )}
                 </button>
               </div>
-              <label className="label">
+              <label htmlFor="password" className="label">
                 <span className="label-text-alt text-base-content/60">
                   Must be at least 6 characters
                 </span>

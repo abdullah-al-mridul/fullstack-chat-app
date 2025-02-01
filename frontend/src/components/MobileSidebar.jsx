@@ -3,11 +3,13 @@ import { Link, useLocation } from "react-router-dom";
 import { Settings, LogOut, X } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useSidebarStore } from "../store/useSidebarStore";
+import { useLogoutModalStore } from "../store/useLogoutModalStore";
 
 const MobileSidebar = () => {
-  const { logout } = useAuthStore();
+  const { authUser, logout } = useAuthStore();
   const { isSidebarOpen, closeSidebar } = useSidebarStore();
   const location = useLocation();
+  const { openModal } = useLogoutModalStore();
 
   // Don't show mobile sidebar on chat page
   if (location.pathname === "/") return null;
@@ -54,13 +56,18 @@ const MobileSidebar = () => {
             <Settings className="size-5" />
             <span>Settings</span>
           </Link>
-          <button
-            onClick={handleLogout}
-            className="btn btn-ghost w-full justify-start gap-2 text-error hover:text-error"
-          >
-            <LogOut className="size-5" />
-            <span>Logout</span>
-          </button>
+          {authUser && (
+            <button
+              onClick={() => {
+                closeSidebar();
+                openModal();
+              }}
+              className="btn btn-ghost w-full justify-start gap-2 text-error hover:text-error"
+            >
+              <LogOut className="size-5" />
+              <span>Logout</span>
+            </button>
+          )}
         </div>
       </aside>
     </>

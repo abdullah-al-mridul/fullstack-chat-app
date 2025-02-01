@@ -65,3 +65,31 @@ export const sendMessage = async (req, res) => {
       .json({ message: "Internal server error", error: err.message });
   }
 };
+
+export const getConnectedUsers = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find all messages where user is either sender or receiver
+    const messages = await Message.find({
+      $or: [{ senderId: userId }, { receiverId: userId }],
+    });
+
+    // Extract unique user IDs from messages
+    const connectedUserIds = [
+      ...new Set([
+        ...messages.map((msg) => msg.senderId.toString()),
+        ...messages.map((msg) => msg.receiverId.toString()),
+      ]),
+    ].filter((id) => id !== userId.toString());
+
+    // Get user details for these IDs
+    const connectedUsers = await User.find({
+      _id: { $in: connectedUserIds },
+    }).select("-password");
+
+    res.status(200).json(connectedUsers);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

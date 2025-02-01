@@ -15,9 +15,9 @@ const HomePage = () => {
         <div className="absolute -bottom-40 -left-40 size-80 rounded-full bg-secondary/20 blur-3xl" />
       </div>
 
-      <div className="flex items-center justify-center sm:pt-20 h-full pt-[65px]">
-        <div className="backdrop-blur-xl bg-base-100/50 sm:rounded-2xl border border-base-content/5 shadow-xl w-full max-w-6xl h-[calc(100vh-65px)] sm:h-[calc(100vh-8rem)]">
-          <div className="flex h-full rounded-2xl overflow-hidden">
+      <div className="flex items-center justify-center lg:pt-20 h-full pt-[65px]">
+        <div className="backdrop-blur-xl bg-base-100/50 lg:rounded-2xl border border-base-content/5 shadow-xl w-full max-w-6xl h-[calc(100vh-65px)] lg:h-[calc(100vh-8rem)]">
+          <div className="flex h-full lg:rounded-2xl overflow-hidden">
             <Sidebar />
             {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
           </div>

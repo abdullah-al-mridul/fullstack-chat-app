@@ -14,9 +14,11 @@ import { Toaster } from "react-hot-toast";
 import { useThemeStore } from "./store/useThemeStore";
 import EmailVerfication from "./pages/EmailVerfication";
 import ImageModal from "./components/ImageModal";
+import LogoutModal from "./components/LogoutModal";
+import NotificationRequest from "./components/NotificationRequest";
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const { theme } = useThemeStore();
   // console.log({ onlineUsers });
   useEffect(() => {
@@ -103,12 +105,11 @@ const App = () => {
         />
 
         {/* Settings can be accessed regardless of verification */}
-        <Route
-          path="/settings"
-          element={authUser ? <Settings /> : <Navigate to="/login" />}
-        />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
       <ImageModal />
+      <LogoutModal />
+      <NotificationRequest />
       <Toaster position="bottom-center" />
     </div>
   );
